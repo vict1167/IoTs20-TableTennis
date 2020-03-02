@@ -37,7 +37,7 @@ while not lora.has_joined():
     pycom.rgbled(off)
     time.sleep(0.1)
     pycom.rgbled(red)
-    time.sleep(2)
+    time.sleep(1)
 print('Joined')
 pycom.rgbled(blue)
 
@@ -92,11 +92,16 @@ def ensuring_movement():
 def detection():
     x = mean(10, 'GyX')
     y = mean(10, 'GyY')
-    z = mean(10, 'GyZ')
-
-    if(x > 0 and y > 0):
+    z_new = mean(10, 'GyZ')
+    time.sleep(1)
+    z_old = mean(10, 'GyZ')
+    print("---")
+    print("new: ", z_new)
+    print("old: ", z_old)
+    if(abs(z_old - z_new) > 5):
         pycom.rgbled(green)
         print('Movement Detected ensuring detection...')
+        lora_send("x:" + str(x) + ", y:" + str(y) + ", z:" + str(z_new))
     else:
         pycom.rgbled(off)
         time.sleep(5)
@@ -104,3 +109,5 @@ def detection():
 
 while True:
     detection()
+    time.sleep(1)
+    pycom.rgbled(off)
