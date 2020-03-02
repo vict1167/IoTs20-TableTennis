@@ -5,8 +5,10 @@ from LIS2HH12 import LIS2HH12
 from pytrack import Pytrack
 from pysense import Pysense
 from network import LoRa
+import ubinascii
 import binascii
 import socket
+import struct
 from machine import I2C, Pin
 import mpu6050
 
@@ -20,11 +22,12 @@ green = 0x00ff00
 blue = 0x0000ff
 
 # Set network keys
+dev_eui = binascii.unhexlify('70B3D54999A506C5')
 app_eui = binascii.unhexlify('70B3D57ED002B1D1')
-app_key = binascii.unhexlify('A8E7A9A14803DCA72F9649B1BBAB7D15')
+app_key = binascii.unhexlify('E5095A715F2C51C732AEFBEA1DE40095')
 
 # Join the network
-lora.join(activation=LoRa.OTAA, auth=(app_eui, app_key), timeout=0)
+lora.join(activation=LoRa.OTAA, auth=(dev_eui, app_eui, app_key), timeout=0)
 pycom.rgbled(red)
 
 # Loop until joined
@@ -37,9 +40,9 @@ while not lora.has_joined():
 print('Joined')
 pycom.rgbled(blue)
 
-s = socket.socket(socket.AF_LORA, socket.SOCK_RAW)
-s.setsockopt(socket.SOL_LORA, socket.SO_DR, 5)
-s.setblocking(True)
+sock = socket.socket(socket.AF_LORA, socket.SOCK_RAW)
+sock.setsockopt(socket.SOL_LORA, socket.SO_DR, 5)
+sock.setblocking(True)
 
 
 # Setting up the accelerometer
@@ -65,15 +68,15 @@ def ack():
 def lora_send(payload):
     print('Sending uplink message')
     pycom.rgbled(red)
-    lora_sock.send(payload)
+    sock.send(payload)
     print('LoRa uplink complete')
     ack()
 
 
 while True:
-    x = mean(100, 'GyX')
-    y = mean(100, 'GyY')
-    z = mean(100, 'GyZ')
+    x = mean(10, 'GyX')
+    y = mean(10, 'GyY')
+    z = mean(10, 'GyZ')
     print('x: ', x)
     print('y: ', y)
     if(x > 0 and y > 0):
@@ -81,6 +84,7 @@ while True:
         lora_send('Detecting movement')
     else:
         pycom.rgbled(off)
-        lora_send('No movement detection')
+        #time.sleep(5)
+        #lora_send('No movement detection')
         
 
