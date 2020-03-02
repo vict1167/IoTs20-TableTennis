@@ -9,6 +9,7 @@ import ubinascii
 import binascii
 import socket
 import struct
+import math
 from machine import I2C, Pin
 import mpu6050
 
@@ -72,19 +73,34 @@ def lora_send(payload):
     print('LoRa uplink complete')
     ack()
 
+def ensuring_movement():
+    print('Ensuring movement')
+    x_old = mean(10, 'GyX')
+    y_old = mean(10, 'GyY')
+    z_old = mean(10, 'GyZ')
 
-while True:
+    x_new = mean(10, 'GyX')
+    y_new = mean(10, 'GyY')
+    z_new = mean(10, 'GyZ')
+
+    if(math.abs(x_old - x_new) > 10 and math.abs(y_old - y_new) > 10):
+        lora_send(' ')
+        print('Confirmed movement')
+    else:
+        time.sleep(5)
+
+def detection():
     x = mean(10, 'GyX')
     y = mean(10, 'GyY')
     z = mean(10, 'GyZ')
-    print('x: ', x)
-    print('y: ', y)
+
     if(x > 0 and y > 0):
-        pycom.rgbled(red)
-        lora_send('Detecting movement')
+        pycom.rgbled(green)
+        print('Movement Detected ensuring detection...')
     else:
         pycom.rgbled(off)
-        #time.sleep(5)
+        time.sleep(5)
         #lora_send('No movement detection')
-        
 
+while True:
+    detection()
