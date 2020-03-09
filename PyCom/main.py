@@ -84,7 +84,7 @@ def ensuring_movement():
     z_new = mean(10, 'GyZ')
 
     if(math.abs(x_old - x_new) > 10 and math.abs(y_old - y_new) > 10):
-        lora_send(' ')
+        lora_send('on')
         print('Confirmed movement')
     else:
         time.sleep(5)
