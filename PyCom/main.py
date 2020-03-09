@@ -37,7 +37,7 @@ while not lora.has_joined():
     pycom.rgbled(off)
     time.sleep(0.1)
     pycom.rgbled(red)
-    time.sleep(2)
+    time.sleep(1)
 print('Joined')
 pycom.rgbled(blue)
 
@@ -67,36 +67,39 @@ def ack():
 
 
 def lora_send(payload):
-    print('Sending uplink message')
+    print('Sending uplink message: ', payload)
     pycom.rgbled(red)
-    sock.send(payload)
+    a = sock.send(payload)
     print('LoRa uplink complete')
     ack()
 
-def ensuring_movement():
-    print('Ensuring movement')
-    x_old = mean(10, 'GyX')
-    y_old = mean(10, 'GyY')
-    z_old = mean(10, 'GyZ')
+# def ensuring_movement():
+#     print('Ensuring movement')
+#     x_old = mean(10, 'GyX')
+#     y_old = mean(10, 'GyY')
+#     z_old = mean(10, 'GyZ')
 
-    x_new = mean(10, 'GyX')
-    y_new = mean(10, 'GyY')
-    z_new = mean(10, 'GyZ')
+#     x_new = mean(10, 'GyX')
+#     y_new = mean(10, 'GyY')
+#     z_new = mean(10, 'GyZ')
 
-    if(math.abs(x_old - x_new) > 10 and math.abs(y_old - y_new) > 10):
-        lora_send('on')
-        print('Confirmed movement')
-    else:
-        time.sleep(5)
+#     if(math.abs(x_old - x_new) > 10 and math.abs(y_old - y_new) > 10):
+#         lora_send(' ')
+#         print('Confirmed movement')
+#     else:
+#         time.sleep(5)
 
 def detection():
     x = mean(10, 'GyX')
     y = mean(10, 'GyY')
-    z = mean(10, 'GyZ')
-
-    if(x > 0 and y > 0):
+    z_new = mean(10, 'GyZ')
+    time.sleep(1)
+    z_old = mean(10, 'GyZ')
+    print("new: ", z_new, "- old: ", z_old)
+    if(abs(z_old - z_new) > 5):
         pycom.rgbled(green)
         print('Movement Detected ensuring detection...')
+        lora_send("x:" + str(x) + ", y:" + str(y) + ", z:" + str(z_new))
     else:
         pycom.rgbled(off)
         time.sleep(5)
@@ -104,3 +107,5 @@ def detection():
 
 while True:
     detection()
+    time.sleep(1)
+    pycom.rgbled(off)
